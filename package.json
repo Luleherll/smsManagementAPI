@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "nyc mocha --reporter dot --exit",
+    "test": "nyc --reporter=html --reporter=text mocha --reporter dot --exit",
     "start-dev": "nodemon app.js"
   },
   "repository": {

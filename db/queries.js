@@ -10,8 +10,8 @@ module.exports = {
       THEN RAISE NOTICE 'Database already exists'; ELSE PERFORM
        dblink_connect('host=${dbConnection().host} user=' || _user || ' password=' || _password || ' dbname=' || current_database());
         PERFORM dblink_exec('CREATE DATABASE ' || _db); END IF; END $do$`),
-  createUserTableQuery: `
-        CREATE TABLE IF NOT EXISTS users
+  createUserTableQuery: (database) => (
+    `CREATE TABLE IF NOT EXISTS users
         (
           user_id serial NOT NULL,
           name character varying(255),
@@ -25,9 +25,9 @@ module.exports = {
         );
         ALTER TABLE users
           OWNER TO postgres;
-        `,
+        `),
 
-  createMessagesTableQuery: `
+  createMessagesTableQuery: (database) => (`
         CREATE TABLE IF NOT EXISTS messages
         (
           _id integer NOT NULL,
@@ -47,7 +47,8 @@ module.exports = {
         );
         ALTER TABLE messages
           OWNER TO postgres;
-        `,
+        `),
   insertUser: `INSERT INTO users(name, number, password) VALUES($1, $2, $3) RETURNING user_id;`,
-  dropDB: (database) => `DROP DATABASE ${database}`
+  dropMessagesTable: (database) => (`DROP TABLE IF EXISTS messages`),
+  dropUserTable: (database) => (`DROP TABLE IF EXISTS users`)
 };

@@ -2,7 +2,7 @@ module.exports = {
   JWT_SECRET: 'smsmanagersecret',
   dbConnection: () => ({
     user:  'postgres',
-    password: '0789',
+    password: 'databasepassword',
     port: 5432,
     host: 'localhost',
     database: process.env.DB_NAME || 'smsmanager'

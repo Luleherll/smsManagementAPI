@@ -2,24 +2,25 @@ const express = require('express');
 const morgan = require('morgan');
 const bodyParser = require('body-parser');
 
-const { createDbQuery, createUserTableQuery, createMessagesTableQuery } = require('./db/queries');
+const { createDbQuery, createUserTableQuery, createMessagesTableQuery, dropDB } = require('./db/queries');
 const { dbConnection } = require('./config');
 const { createInitialQuery, execQuery } = require('./db');
 
 const app = express();
 const port = process.env.PORT || 3000;
-process.env.NODE_ENV = 'test';
+process.env.NODE_ENV = 'development';
 
 const { NODE_ENV } = process.env;
 
-createInitialQuery(dbConnection, createDbQuery, 'createDb', NODE_ENV);
-async function createTables() {
-  return new Promise((res, rej)=> {
-    createInitialQuery(dbConnection, createUserTableQuery, 'db', NODE_ENV)
-    .then(res => createInitialQuery(dbConnection, createMessagesTableQuery, 'db', NODE_ENV));
+async function createDatabase(NODE_ENV) {
+  await new Promise((res, rej)=> {
+    createInitialQuery(dbConnection, createDbQuery, 'db', NODE_ENV)
+    .then(res => createInitialQuery(dbConnection, createUserTableQuery, 'tables', NODE_ENV))
+    .then(res => createInitialQuery(dbConnection, createMessagesTableQuery, 'tables', NODE_ENV))
+    .catch(err => console.log(err))
   });
 }
-createTables();
+createDatabase(NODE_ENV);
 
 // middleware
 app.use(morgan('dev'));
