@@ -1,7 +1,5 @@
 process.env.NODE_ENV = "test";
 
-const nock = require("nock");
-
 const chai = require("chai");
 const chaiHttp = require("chai-http");
 const server = require("../app");
