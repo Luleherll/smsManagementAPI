@@ -3,13 +3,15 @@ process.env.NODE_ENV = "test";
 const chai = require("chai");
 const chaiHttp = require("chai-http");
 const server = require("../app");
-const { testHooks, signup } = require("./helpers");
+const { testHooks, signup, getToken, userAuth, agent } = require("./helpers");
 
 const should = chai.should();
 chai.use(chaiHttp);
+const app = agent("http://localhost:3000/api/v1/user")
 
 describe("User authentication", () => {
   testHooks();
+  
   describe("/POST signup", () => {
     [
       {},
@@ -25,8 +27,7 @@ describe("User authentication", () => {
     })
 
     it("should be successful", done => {
-      chai
-        .request("http://localhost:3000/users")
+      app
         .post("/signup")
         .send({
           name: "admin",
@@ -47,13 +48,11 @@ describe("User authentication", () => {
         phoneNumber: 123456789,
         password: "testpassword"
       };
-      chai
-        .request("http://localhost:3000/users")
+      app
         .post("/signup")
         .send(data)
         .end((err, res) => {
-          chai
-            .request("http://localhost:3000/users")
+          app
             .post("/signup")
             .send(data)
             .end((err, res) => {
@@ -66,10 +65,10 @@ describe("User authentication", () => {
     });
   });
 
-  describe("/POST signin", () => {
+  describe("/POST signin", async() => {
+    
     it("should be successful", done => {
-      chai
-        .request("http://localhost:3000/users")
+      app
         .post("/signin")
         .send({
           phoneNumber: 123456789,
@@ -84,14 +83,14 @@ describe("User authentication", () => {
     });
 
     it("should be unsuccessful for unregistered user", done => {
-      chai
-        .request("http://localhost:3000/users")
+      app
         .post("/signin")
         .send({
           phoneNumber: 1236789,
           password: "testpassword"
         })
         .end((err, res) => {
+    
           res.should.have.status(401);
           res.body.should.be.a("object");
           res.body.should.have.property("error");

@@ -4,7 +4,7 @@ const { ADMIN_DB, dbConnection } = require('../config');
 
 async function createInitialQuery(dbConnection, query, type, ENV) {
   process.env.DB_NAME = ENV === 'test' ? 'testdb' : 'smsmanager';
-  const newQuery = query(process.env.DB_NAME)
+  const newQuery = query(process.env.DB_NAME);
   const client = new Client({ ...dbConnection(), database: type === 'db' ? ADMIN_DB : process.env.DB_NAME });
   client.connect();
   await new Promise((resolve, reject) => {

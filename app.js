@@ -27,7 +27,10 @@ app.use(morgan('dev'));
 app.use(bodyParser.json());
 
 // routes
-app.use('/users', require('./routes/index.js'));
+app.use('/api/v1/', require('./routes/index.js'));
+// app.use('/api/:id', (req,res) => {
+//   res.sendStatus(200);
+// })
 
 app.listen(port);
 console.log(`server listening at port ${port}`);
