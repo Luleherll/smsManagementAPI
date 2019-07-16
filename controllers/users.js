@@ -1,27 +1,30 @@
 const { dbClient } = require("../app");
 const { signToken } = require("../helpers/jwt");
-const { errorOcurred, onSuccess } = require('../helpers');
-const { insertData } = require("../db/queries");
+const { insertUser } = require("../db/queries");
 const { execQuery } = require("../db");
 
 const { UNIQUE_CONSTRAINT_CODE } = require("../config");
 
+const errorOcurred = (err, res) => {
+  let errorMsg = "An error has occurred. Please try again";
+  if (err.code === UNIQUE_CONSTRAINT_CODE) {
+    errorMsg = "Phone number is already registered.";
+  }
+  return res.status(403).json({ error: errorMsg });
+};
+
 module.exports = {
   signUp: async (req, res, next) => {
     const { name, phoneNumber, password } = req.body;
-    const message = "User successfully registered.";
-    const signUpError = err => {
-      if (err.code === UNIQUE_CONSTRAINT_CODE) {
-        return { text: "Phone number is already registered.", status: 403 };
-      }
-      return null;
-    };
+    const onSuccess = response =>
+      res.status(201).json({ message: "User successfully registered." });
+
     await execQuery(
-      insertData('users', ['name', 'number', 'password'], 'user_id'),
+      "INSERT INTO users(name, number, password) VALUES($1, $2, $3) RETURNING user_id;",
       [name, phoneNumber, password],
       res,
-      onSuccess(res, message, 201),
-      errorOcurred(signUpError)
+      onSuccess,
+      errorOcurred
     );
   },
   signIn: async (req, res, next) => {
@@ -31,11 +34,10 @@ module.exports = {
         res.status(401).json({ error: "User is not registered." });
         return;
       }
-      console.log(response.rows[0]);
       const { user_id, name, number } = response.rows[0];
       res
         .status(200)
-        .json({ token: signToken(user_id), user: { user_id, name, number } });
+        .json({ token: signToken(user_id), user: { name, number } });
     };
     await execQuery(
       "SELECT * FROM users WHERE number = $1 and password = $2",
