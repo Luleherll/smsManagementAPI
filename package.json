@@ -4,8 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "db:seed": "node ./db/seeder.js",
     "test": "nyc --reporter=html --reporter=text mocha --reporter dot --exit",
-    "start-dev": "nodemon app.js",
+    "start": "nodemon app.js",
     "coverage": "nyc report --reporter=text-lcov | coveralls"
   },
   "repository": {

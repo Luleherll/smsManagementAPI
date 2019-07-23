@@ -31,14 +31,11 @@ module.exports = {
   createMessagesTableQuery: database => `
         CREATE TABLE IF NOT EXISTS messages
         (
-          _id integer NOT NULL,
+          _id serial NOT NULL,
           sender integer,
           receiver integer,
           body character varying,
-          status boolean,
-          CONSTRAINT messages_receiver_fkey FOREIGN KEY (receiver)
-              REFERENCES users (user_id) MATCH SIMPLE
-              ON UPDATE CASCADE ON DELETE CASCADE,
+          read boolean,
           CONSTRAINT messages_sender_fkey FOREIGN KEY (sender)
               REFERENCES users (user_id) MATCH SIMPLE
               ON UPDATE CASCADE ON DELETE CASCADE
@@ -56,9 +53,13 @@ module.exports = {
   "number" numeric,
   owner integer,
   id serial NOT NULL,
+  user_id integer,
   CONSTRAINT contacts_owner_fkey FOREIGN KEY (owner)
       REFERENCES users (user_id) MATCH SIMPLE
-      ON UPDATE CASCADE ON DELETE CASCADE
+      ON UPDATE CASCADE ON DELETE CASCADE,
+  CONSTRAINT contacts_user_id_fkey FOREIGN KEY (user_id)
+      REFERENCES users (user_id) MATCH SIMPLE
+      ON UPDATE NO ACTION ON DELETE NO ACTION
 )
 WITH (
   OIDS=FALSE
