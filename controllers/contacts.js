@@ -28,6 +28,7 @@ module.exports = {
     const userId = decodeToken(req.token);
     const { name, phoneNumber } = req.body;
     const result = await dataLookup('users', ['number'], [phoneNumber])
+    console.log(phoneNumber);
     if (!result.length) {return res.status(400).json({ error: 'Phone number is not registered.'})}
     if (result[0].user_id === userId) {return res.status(400).json({ error: 'Cannot contact yourself.'})}
     await execQuery(

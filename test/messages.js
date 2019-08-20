@@ -1,11 +1,4 @@
-// const chai = require("chai");
-// const chaiHttp = require("chai-http");
-// const server = require("../app");
 const { userAuth } = require("./helpers");
-
-// const should = chai.should();
-// chai.use(chaiHttp);
-// const app = agent("http://localhost:3000/api/v1/user");
 
 module.exports = (app, should) => describe("API", () => {
   describe("Messages", () => {
@@ -19,18 +12,6 @@ module.exports = (app, should) => describe("API", () => {
         "/signin"
       );
     });
-    // describe("/GET contacts", () => {
-    //   it("returns all user contacts", done => {
-    //     app
-    //       .get("/contacts")
-    //       .set("Authorization", `Bearer ${authUser.body.token}`)
-    //       .end((err, res) => {
-    //         res.should.have.status(200);
-    //         res.body.should.be.a("object");
-    //         done();
-    //       });
-    //   });
-    // });
 
     describe("/POST /:name/send", () => {
       it("sends a message", done => {
@@ -39,9 +20,22 @@ module.exports = (app, should) => describe("API", () => {
         .send({message: 'Test message'})
           .set("Authorization", `Bearer ${authUser.body.token}`)
           .end((err, res) => {
-            console.log(res.body);
             res.should.have.status(201);
             res.body.should.be.a("object");
+            done();
+          });
+      });
+    });
+
+    describe("/GET conversation", () => {
+      it("returns user's messaging history with a contact", done => {
+        app
+          .get("/another/conversation")
+          .set("Authorization", `Bearer ${authUser.body.token}`)
+          .end((err, res) => {
+            res.should.have.status(200);
+            res.body.data.should.have.property("to");
+            res.body.data.should.have.property("from");
             done();
           });
       });

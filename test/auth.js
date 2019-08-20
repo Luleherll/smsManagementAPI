@@ -25,8 +25,6 @@ module.exports = (app, should) =>
             password: "test000000"
           })
           .end((err, res) => {
-            console.log("kkkk", res.body);
-            console.log("jjjj", res.body);
             res.should.have.status(201);
             res.body.should.be.a("object");
             res.body.should.have.property("message");
