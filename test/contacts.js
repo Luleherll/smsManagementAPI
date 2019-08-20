@@ -1,30 +1,13 @@
-const chai = require("chai");
-const chaiHttp = require("chai-http");
-const server = require("../app");
-const { testHooks, signup, userAuth, agent } = require("./helpers");
+const { userAuth} = require("./helpers");
 
-const should = chai.should();
-chai.use(chaiHttp);
-const app = agent("http://localhost:3000/api/v1/user");
-
-describe("API", () => {
-  testHooks();
-
+module.exports = (app, should) => describe("API", () => {
   describe("Contacts", () => {
     let authUser;
     before(async () => {
-      await userAuth(
-        {
-          name: 'testuser',
-          phoneNumber: 123456789,
-          password: "testpassword"
-        },
-        "/signup"
-      );
       authUser = await userAuth(
         {
-          phoneNumber: 123456789,
-          password: "testpassword"
+          phoneNumber: 1234544444,
+          password: "test000000"
         },
         "/signin"
       );
@@ -47,8 +30,8 @@ describe("API", () => {
         app
         .post("/contacts")
         .send({
-          name: "admin",
-          phoneNumber: 1234544444})
+          name: "some",
+          phoneNumber: 1234567890})
           .set("Authorization", `Bearer ${authUser.body.token}`)
           .end((err, res) => {
             res.should.have.status(201);
@@ -61,13 +44,12 @@ describe("API", () => {
     describe("/PUT contacts", () => {
       it("updates a contact", done => {
         app
-        .put(`/contacts/${authUser.body.user.user_id}`)
+        .put(`/contacts/1`)
         .send({
-          name: "test",
-          phoneNumber: 1234544444})
+          name: "testing",
+          phoneNumber: 1234567890})
           .set("Authorization", `Bearer ${authUser.body.token}`)
           .end((err, res) => {
-            console.log(res.body);
             res.should.have.status(200);
             res.body.should.be.a("object");
             done();
@@ -78,9 +60,10 @@ describe("API", () => {
     describe("/DELETE contacts", () => {
       it("deletes a contact", done => {
         app
-        .delete(`/contacts/${authUser.body.user.user_id}`)
+        .delete(`/contacts/1`)
           .set("Authorization", `Bearer ${authUser.body.token}`)
           .end((err, res) => {
+            
             res.should.have.status(200);
             res.body.should.be.a("object");
             done();

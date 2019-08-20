@@ -1,5 +1,6 @@
 module.exports = {
   errorOcurred: (custom = null) => (err, res) => {
+    console.log('ffff', err);
     const error = custom ? custom(err) : custom;
     const errorMsg = error ? error.text : "An error has occurred. Please try again";
     return res.status(error ? error.status : 500).json({ error: errorMsg });

@@ -28,12 +28,11 @@ module.exports = {
     const { phoneNumber, password } = req.body;
     const onSuccess = response => {
       if (response.rowCount === 0) {
-        res.status(401).json({ error: "User is not registered." });
-        return;
+        return res.status(401).json({ error: "User is not registered." });
       }
       console.log(response.rows[0]);
       const { user_id, name, number } = response.rows[0];
-      res
+      return res
         .status(200)
         .json({ token: signToken(user_id), user: { user_id, name, number } });
     };

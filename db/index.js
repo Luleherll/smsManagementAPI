@@ -26,4 +26,16 @@ async function execQuery(query, paramsArray, res, onSuccess, errorOcurred) {
   });
 }
 
-module.exports = { dbClient, createInitialQuery, execQuery };
+async function dataLookup(dbname, fieldsArray, valuesArray ) {
+  let fields = "";
+  fieldsArray.forEach(
+      (field, index) => (fields += `, ${field} = $${index + 1}`)
+    );
+  const query = `SELECT * FROM ${dbname} WHERE ${fields.slice(2)}`
+  const result = await dbClient().query(query, valuesArray)
+    .then((response) => response.rows)
+    .catch(err => console.error(err));
+  return result;
+}
+
+module.exports = { dbClient, createInitialQuery, execQuery, dataLookup };

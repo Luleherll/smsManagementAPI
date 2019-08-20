@@ -1,5 +1,7 @@
 const chai = require("chai");
 const chaiHttp = require("chai-http");
+const dbSeed = require("../db/seeder");
+
 
 const { createInitialQuery, execQuery } = require("../db");
 const { dbConnection } = require("../config");
@@ -25,15 +27,15 @@ async function createDatabase() {
           "test"
         )
       )
-      .then(res => {
+      .then(res =>
         createInitialQuery(
           dbConnection,
           createMessagesTableQuery,
           "tables",
           "test"
-        );
-        resolve();
-      })
+        )
+      )
+      .then(() => resolve(dbSeed()))
       .catch(err => console.log(err));
   });
 }
