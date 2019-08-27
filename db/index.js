@@ -29,9 +29,9 @@ async function execQuery(query, paramsArray, res, onSuccess, errorOcurred) {
 async function dataLookup(dbname, fieldsArray, valuesArray ) {
   let fields = "";
   fieldsArray.forEach(
-      (field, index) => (fields += `, ${field} = $${index + 1}`)
+      (field, index) => (fields += ` AND ${field} = $${index + 1}`)
     );
-  const query = `SELECT * FROM ${dbname} WHERE ${fields.slice(2)}`
+  const query = `SELECT * FROM ${dbname} WHERE ${fields.slice(4)}`
   const result = await dbClient().query(query, valuesArray)
     .then((response) => response.rows)
     .catch(err => console.error(err));
