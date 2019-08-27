@@ -76,22 +76,33 @@ module.exports = (app, should) => describe("API", () => {
       });
     });
 
-    // describe("/PUT contacts", () => {
-    //   it("updates a contact", done => {
-    //     app
-    //     .put(`/contacts/${authUser.body.user.user_id}`)
-    //     .send({
-    //       name: "test",
-    //       phoneNumber: 1234544444})
-    //       .set("Authorization", `Bearer ${authUser.body.token}`)
-    //       .end((err, res) => {
-    //         console.log(res.body);
-    //         res.should.have.status(200);
-    //         res.body.should.be.a("object");
-    //         done();
-    //       });
-    //   });
-    // });
+    describe("/PUT message", () => {
+      it("updates a message", done => {
+        app
+        .put(`/another/to/1`)
+        .send({
+          message: 'edited.'})
+          .set("Authorization", `Bearer ${authUser.body.token}`)
+          .end((err, res) => {
+            res.should.have.status(200);
+            res.body.data.body.should.equal('edited.');
+            done();
+          });
+      });
+
+      it("checks for the message", done => {
+        app
+        .put(`/another/to/50`)
+        .send({
+          message: 'edited.'})
+          .set("Authorization", `Bearer ${authUser.body.token}`)
+          .end((err, res) => {
+            res.should.have.status(400);
+            res.body.should.have.property("error");
+            done();
+          });
+      });
+    });
 
     // describe("/DELETE contacts", () => {
     //   it("deletes a contact", done => {

@@ -1,6 +1,6 @@
 const { decodeToken } = require("../helpers/jwt");
 const { errorOcurred, onSuccess } = require("../helpers");
-const { insertData } = require("../db/queries");
+const { insertData, updateData } = require("../db/queries");
 const { execQuery, dataLookup } = require("../db");
 
 const fetchMessages = async (
@@ -83,7 +83,7 @@ module.exports = {
   },
   getMessage: async (req, res, next) => {
     const sender = decodeToken(req.token);
-    const receiver = await dataLookup("contacts", ["name"], [req.params.name]);
+    const receiver = await dataLookup("contacts", ["name", 'owner'], [req.params.name, sender]);
     if (!receiver.length) { return res.status(400).json({ error: "Contact not found." });}
     const onSuccess = response => {
       res.status(200).json({
@@ -97,5 +97,25 @@ module.exports = {
       onSuccess,
       errorOcurred
     );
-  }
+  },
+  editMessage: async (req, res, next) => {
+    const sender = decodeToken(req.token);
+    const receiver = await dataLookup("contacts", ["name", 'owner'], [req.params.name, sender]);
+    if (!receiver.length) { return res.status(400).json({ error: "Contact not found." });}
+    const onSuccess = response => {
+      if (response.rowCount === 0) {
+        return res.status(400).json({ error: 'Message not found.'});
+      }
+      return res.status(200).json({ message: "Message successfully updated.", data: response.rows[0] });
+    };
+    const id = req.params.msg_id;
+    const { message } = req.body;
+    await execQuery(
+      updateData('messages', ['body'], ['sender', 'receiver', '_id'], '*'),
+      [message, sender, receiver[0].user_id, id],
+      res,
+      onSuccess,
+      errorOcurred
+    );
+  },
 };
