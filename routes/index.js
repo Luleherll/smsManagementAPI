@@ -6,6 +6,7 @@ const {validateData} = require("../helpers/validation");
 const {UserSchema, messageSchema} = require("../helpers/validation/schema");
 
 const {verifyToken} = require("../helpers/jwt");
+const { getContact, getCurrentUser } = require("../helpers/middleware");
 const contact = {
   name: UserSchema.name,
   phoneNumber: UserSchema.phoneNumber
@@ -18,27 +19,29 @@ router.route("/user/signin").post(authControllers.signIn);
 
 router
   .route("/user/contacts")
-  .get(verifyToken(), contactsControllers.getUserContacts);
+  .get(verifyToken(), getCurrentUser, contactsControllers.getUserContacts);
 router
   .route("/user/contacts")
-  .post(verifyToken(), validateData(contact), contactsControllers.addContact);
+  .post(verifyToken(), validateData(contact), getCurrentUser, contactsControllers.addContact);
 router
   .route("/user/contacts/:id")
-  .put(verifyToken(), validateData(contact), contactsControllers.updateContact);
+  .put(verifyToken(), validateData(contact), getCurrentUser, getContact('id'), contactsControllers.updateContact);
 router
   .route("/user/contacts/:id")
-  .delete(verifyToken(), contactsControllers.deleteContact);
+  .delete(verifyToken(), getCurrentUser, getContact('id'), contactsControllers.deleteContact);
 
 router
   .route("/:name/send")
   .post(
     verifyToken(),
     validateData(messageSchema),
+    getCurrentUser,
+    getContact('name'),
     messagesControllers.sendMessage);
 
-router.route('/:name/:type').get(verifyToken(), messagesControllers.conversation);
-router.route('/:name/:type/:msg_id').get(verifyToken(), messagesControllers.getMessage);
-router.route('/:name/:type/:msg_id').put(verifyToken(), messagesControllers.editMessage);
-// router.route('/:name/:type/:msg_id').delete(verifyToken(), messagesControllers.deleteMessage);
+router.route('/:name/:type').get(verifyToken(), getCurrentUser, getContact('name'), messagesControllers.conversation);
+router.route('/:name/:type/:msg_id').get(verifyToken(), getCurrentUser, getContact('name'), messagesControllers.getMessage);
+router.route('/:name/:type/:msg_id').put(verifyToken(), getCurrentUser, getContact('name'), messagesControllers.editMessage);
+router.route('/:name/:type/:msg_id').delete(verifyToken(), getCurrentUser, getContact('name'), messagesControllers.deleteMessage);
 
 module.exports = router;

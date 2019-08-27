@@ -104,17 +104,28 @@ module.exports = (app, should) => describe("API", () => {
       });
     });
 
-    // describe("/DELETE contacts", () => {
-    //   it("deletes a contact", done => {
-    //     app
-    //     .delete(`/contacts/${authUser.body.user.user_id}`)
-    //       .set("Authorization", `Bearer ${authUser.body.token}`)
-    //       .end((err, res) => {
-    //         res.should.have.status(200);
-    //         res.body.should.be.a("object");
-    //         done();
-    //       });
-    //   });
-    // });
+    describe("/DELETE message", () => {
+      it("deletes a message", done => {
+        app
+        .delete(`/another/to/1`)
+          .set("Authorization", `Bearer ${authUser.body.token}`)
+          .end((err, res) => {
+            res.should.have.status(200);
+            res.body.should.be.a("object");
+            done();
+          });
+      });
+
+      it("checks for the message", done => {
+        app
+        .delete(`/another/to/2`)
+          .set("Authorization", `Bearer ${authUser.body.token}`)
+          .end((err, res) => {
+            res.should.have.status(400);
+            res.body.should.have.property("error");
+            done();
+          });
+      });
+    });
   });
 });

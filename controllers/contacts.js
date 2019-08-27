@@ -10,10 +10,9 @@ module.exports = {
     const onSuccess = response => {
       res.status(200).json({ data: response.rows.map(contact => (({owner, ...others}) => ({...others}))(contact)) });
     };
-    const userId = decodeToken(req.token);
     await execQuery(
       "SELECT * FROM contacts WHERE owner = $1;",
-      [userId],
+      [req.sender],
       res,
       onSuccess,
       errorOcurred
@@ -25,50 +24,39 @@ module.exports = {
       return null;
     };
     const message = "Contact successfully added.";
-    const userId = decodeToken(req.token);
     const { name, phoneNumber } = req.body;
-    const result = await dataLookup('users', ['number'], [phoneNumber])
-    console.log(phoneNumber);
-    if (!result.length) {return res.status(400).json({ error: 'Phone number is not registered.'})}
-    if (result[0].user_id === userId) {return res.status(400).json({ error: 'Cannot contact yourself.'})}
+    const result = await dataLookup('users', ['number'], [phoneNumber]);
+
+    if (!result.length) {return res.status(400).json({ error: 'Phone number is not registered.'})};
+    if (result[0].user_id === req.sender) {return res.status(400).json({ error: 'Cannot contact yourself.'})};
+
     await execQuery(
       insertData('contacts', ['owner', 'name', 'number', 'user_id'], 'id'),
-      [userId, name, phoneNumber, result[0].user_id],
+      [req.sender, name, phoneNumber, result[0].user_id],
       res,
       onSuccess(res, message, 201),
       errorOcurred(addError)
     );
   },
   updateContact: async(req, res, next) => {
-    const onSuccess = response => {
-      if (response.rowCount === 0) {
-        return res.status(400).json({ error: 'Contact not found.'});
-      }
-      return res.status(200).json({ message: "Contact successfully updated." });
-    };
+    const onSuccess = response => res.status(200).json({ message: "Contact successfully updated." });
     const id = req.params.id;
-    const userId = decodeToken(req.token);
     const { name, phoneNumber } = req.body;
+    console.log(updateData('contacts', ['name', 'number'], ['owner', 'id'], 'id'));
     await execQuery(
       updateData('contacts', ['name', 'number'], ['owner', 'id'], 'id'),
-      [name, phoneNumber, userId, id],
+      [name, phoneNumber, req.sender, id],
       res,
       onSuccess,
       errorOcurred
     );
   },
   deleteContact: async(req, res, next) => {
-    const onSuccess = response => {
-      if (response.rowCount === 0) {
-        return res.status(400).json({ error: 'Contact not found.'});
-      }
-      return res.status(200).json({ message: "Contact successfully deleted." });
-    };
+    const onSuccess = response => res.status(200).json({ message: "Contact successfully deleted." });
     const id = req.params.id;
-    const userId = decodeToken(req.token);
     await execQuery(
       "DELETE FROM contacts WHERE owner = $1 and id = $2;",
-      [userId, id],
+      [req.sender, id],
       res,
       onSuccess,
       errorOcurred
