@@ -36,6 +36,9 @@ router
     validateData(messageSchema),
     messagesControllers.sendMessage);
 
-router.route('/:name/conversation').get(verifyToken(), messagesControllers.conversation);
+router.route('/:name/:type').get(verifyToken(), messagesControllers.conversation);
+router.route('/:name/:type/:msg_id').get(verifyToken(), messagesControllers.getMessage);
+// router.route('/:name/:type/:msg_id').put(verifyToken(), messagesControllers.editMessage);
+// router.route('/:name/:type/:msg_id').delete(verifyToken(), messagesControllers.deleteMessage);
 
 module.exports = router;

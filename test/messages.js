@@ -39,6 +39,41 @@ module.exports = (app, should) => describe("API", () => {
             done();
           });
       });
+
+      it("checks the url", done => {
+        app
+          .get("/another/not-url")
+          .set("Authorization", `Bearer ${authUser.body.token}`)
+          .end((err, res) => {
+            res.should.have.status(404);
+            done();
+          });
+      });
+    });
+
+    describe("/GET message", () => {
+      it("returns a message", done => {
+        app
+        .get(`/another/to/1`)
+          .set("Authorization", `Bearer ${authUser.body.token}`)
+          .end((err, res) => {
+            console.log(res.body);
+            res.should.have.status(200);
+            res.body.data.should.be.a("array");
+            done();
+          });
+      });
+
+      it("checks the contact", done => {
+        app
+        .get(`/fake/to/1`)
+          .set("Authorization", `Bearer ${authUser.body.token}`)
+          .end((err, res) => {
+            res.should.have.status(400);
+            res.body.should.have.property("error");
+            done();
+          });
+      });
     });
 
     // describe("/PUT contacts", () => {
