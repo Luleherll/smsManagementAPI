@@ -42,29 +42,22 @@ const fetchMessages = async (
 module.exports = {
   sendMessage: async (req, res, next) => {
     const success = "Message sent.";
-    const sender = decodeToken(req.token);
     const { message } = req.body;
-    const receiver = await dataLookup("contacts", ["name", 'owner'], [req.params.name, sender]);
-    if (!receiver.length) {
-      return res.status(400).json({ error: "Contact not found." });
-    }
 
     await execQuery(
       insertData("messages", ["sender", "receiver", "body", "read"], "_id"),
-      [sender, receiver[0].user_id, message, false],
+      [req.sender, req.receiver.user_id, message, false],
       res,
       onSuccess(res, success, 201),
       errorOcurred()
     );
   },
   conversation: async (req, res, next) => {
-    const sender = decodeToken(req.token);
-    const receiver = await dataLookup("contacts", ["name", 'owner'], [req.params.name, sender]);
     const type = req.params.type;
     const onSuccess = response => {
-      const to = response.rows.filter(msg => msg.sender === sender);
+      const to = response.rows.filter(msg => msg.sender === req.sender);
       const sent = response.rows.filter(
-        msg => msg.sender === receiver[0].user_id
+        msg => msg.sender === req.receiver.user_id
       );
       const data =
         type === "to" ? to : type === "from" ? sent : { to: to, from: sent };
@@ -74,17 +67,14 @@ module.exports = {
     };
     fetchMessages(
       type,
-      sender,
+      req.sender,
       res,
-      receiver[0].user_id,
+      req.receiver.user_id,
       onSuccess,
       errorOcurred
     );
   },
   getMessage: async (req, res, next) => {
-    const sender = decodeToken(req.token);
-    const receiver = await dataLookup("contacts", ["name", 'owner'], [req.params.name, sender]);
-    if (!receiver.length) { return res.status(400).json({ error: "Contact not found." });}
     const onSuccess = response => {
       res.status(200).json({
         data: response.rows
@@ -92,16 +82,13 @@ module.exports = {
     };
     await execQuery(
       "SELECT * FROM messages WHERE _id = $1 and receiver = $2;",
-      [req.params.msg_id, receiver[0].user_id],
+      [req.params.msg_id, req.receiver.user_id],
       res,
       onSuccess,
       errorOcurred
     );
   },
   editMessage: async (req, res, next) => {
-    const sender = decodeToken(req.token);
-    const receiver = await dataLookup("contacts", ["name", 'owner'], [req.params.name, sender]);
-    if (!receiver.length) { return res.status(400).json({ error: "Contact not found." });}
     const onSuccess = response => {
       if (response.rowCount === 0) {
         return res.status(400).json({ error: 'Message not found.'});
@@ -112,7 +99,24 @@ module.exports = {
     const { message } = req.body;
     await execQuery(
       updateData('messages', ['body'], ['sender', 'receiver', '_id'], '*'),
-      [message, sender, receiver[0].user_id, id],
+      [message, req.sender, req.receiver.user_id, id],
+      res,
+      onSuccess,
+      errorOcurred
+    );
+  },
+
+  deleteMessage: async (req, res, next) => {
+    const onSuccess = response => {
+      if (response.rowCount === 0) {
+        return res.status(400).json({ error: 'Message not found.'});
+      }
+      return res.status(200).json({ message: "Message successfully deleted." });
+    };
+    const id = req.params.msg_id;
+    await execQuery(
+      "DELETE FROM messages WHERE sender = $1 AND receiver = $2 AND _id = $3;",
+      [req.sender, req.receiver.user_id, id],
       res,
       onSuccess,
       errorOcurred
