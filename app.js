@@ -2,7 +2,7 @@ const express = require('express');
 const morgan = require('morgan');
 const bodyParser = require('body-parser');
 
-const { createDbQuery, createUserTableQuery, createMessagesTableQuery, dropDB } = require('./db/queries');
+const { createDbQuery, createUserTableQuery, createMessagesTableQuery, createContactsTableQuery, dropDB } = require('./db/queries');
 const { dbConnection } = require('./config');
 const { createInitialQuery, execQuery } = require('./db');
 
@@ -16,6 +16,7 @@ async function createDatabase(NODE_ENV) {
   await new Promise((res, rej)=> {
     createInitialQuery(dbConnection, createDbQuery, 'db', NODE_ENV)
     .then(res => createInitialQuery(dbConnection, createUserTableQuery, 'tables', NODE_ENV))
+    .then(res => createInitialQuery(dbConnection, createContactsTableQuery, 'tables', NODE_ENV))
     .then(res => createInitialQuery(dbConnection, createMessagesTableQuery, 'tables', NODE_ENV))
     .catch(err => console.log(err))
   });
